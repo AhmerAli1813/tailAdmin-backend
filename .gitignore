@@ -1,0 +1,34 @@
+# Logs
+frontent-react-ts/logs
+*.log
+frontent-react-ts/npm-debug.log*
+frontent-react-ts/yarn-debug.log*
+frontent-react-ts/yarn-error.log*
+frontent-react-ts/pnpm-debug.log*
+frontent-react-ts/lerna-debug.log*
+
+frontent-react-ts/node_modules
+frontent-react-ts/dist
+frontent-react-ts/dist-ssr
+*.local
+
+# Editor directories and files
+frontent-react-ts/.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+backend-dotnet8/.vs/*
+backend-dotnet8/App.API/bin/*
+backend-dotnet8/App.API/obj/*
+backend-dotnet8/App.API/bin/*
+backend-dotnet8/App.DataAccessLayer/bin/*
+backend-dotnet8/App.DataAccessLayer/obj/*
+backend-dotnet8/App.Infrastructure/bin/*
+backend-dotnet8/App.Infrastructure/obj/*
+backend-dotnet8/App.Services/bin/*
+backend-dotnet8/App.Services/obj/*

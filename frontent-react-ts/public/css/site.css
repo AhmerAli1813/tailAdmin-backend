@@ -1,0 +1,184 @@
+@import url(../assets/plugins/bootstrap-5.3.3/css/bootstrap.min.css);
+@import url(../assets/css/skin-modes.css);
+@import url(../assets/plugins/bootstrap-datepicker/css/bootstrap-datepicker.css);
+@import url(../assets/iconfonts/font-awesome/css/font-awesome.min.css);
+@import url(../assets/css/datatables.min.css);
+@import url(./style.css);
+
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+}
+
+.page-header-button, .filter-button {
+    display: flex;
+    justify-content: end;
+}
+
+.page-header-button {
+    margin-bottom: 0.5rem;
+}
+/*Btn Css Start here*/
+.btn-filter, .btn-reset {
+    color: #fff !important;
+    background-color: #343a40 !important;
+    border-color: #343a40 !important;
+}
+.btn-filter:focus, .btn-reset:focus {
+    box-shadow: 0 0 0 2px rgba(52, 58, 64, 0.9);
+    border-color: #343a40;
+}
+
+.btn-filter:hover ,btn-reset:hover {
+    color: #fff;
+    background-color: rgba(52, 58, 64, 0.85) !important;
+    border-color: rgba(52, 58, 64, 0.85);
+}
+.btn-add, .btn-search {
+    color: #fff !important;
+    background-color: var(--primary-bg-color) !important;
+    border-color: var(--primary-bg-color) !important;
+}
+.btn-add:hover ,.btn-search:hover {
+    color: #fff;
+    background-color: var(--primary09) !important;
+    border-color: var(--primary09);
+}
+.datepicker-container{
+    position:relative;
+}
+span .input-group-addon, span.select-group-addon, .input-group-addon {
+    position: absolute;
+    background: var(--primary-bg-color) !important;
+    color: white !important;
+    text-align: center;
+    border-radius: 7px !important;
+    padding: 6px !important;
+    display: grid;
+    align-items: center;
+    pointer-events: none;
+    top: 18%;
+    right: 1.5%;
+    font-size: 16px;
+}
+.fa, .far, .fas {
+    font-family: "FontAwesome" !important;
+}
+.select2-container{
+    width:100%!important;
+}
+.select2-container--default .select2-selection--multiple {
+    padding-right: 30px; /* Add space for the arrow */
+    position: relative;
+}
+
+    .select2-container--default .select2-selection--multiple::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 5px solid #aaa; /* Arrow color */
+        transform: translateY(-50%);
+    }
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      
+      .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        width: 500px;
+        max-width: 90%;
+        position: relative;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 15px;
+      }
+      
+      .modal-title {
+        margin: 0;
+        font-size: 18px;
+      }
+      
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+      }
+      
+      .modal-body {
+        font-size: 16px;
+      }
+      .react-datepicker-wrapper {
+    width: 100%;  
+    }
+ 
+    a{
+        cursor: pointer;
+    }
+    .slide-menu .side-menu__item{
+        font-size: 13px;
+    }
+    .btn-spinner{
+        width: 1.6rem;
+        height: 1.6rem;
+        border-radius: 100%;
+        border: 2px solid white;
+        border-top-color: transparent; /* Creates the spinning effect */
+        animation: spin-around 0.8s linear infinite;
+    }
+    
+    @keyframes spin-around {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .d-flex-center
+    {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }

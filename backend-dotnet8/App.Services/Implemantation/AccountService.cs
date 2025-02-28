@@ -1,9 +1,12 @@
 ﻿
+using App.DataAccessLayer.EntityModel.SQL.Data;
 using App.DataAccessLayer.EntityModel.SQL.Model;
-using App.Services.Dto.Auth;
+using App.Infrastructure;
+using App.Services.Dto.Account;
 using App.Services.Dto.General;
 using App.Services.Helper;
 using App.Services.Interface;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace App.Services.Implemantation;
 
@@ -18,40 +22,91 @@ public class AccountService : IAccountService
 {
     #region Constructor & DI
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly ILogService _logService;
     private readonly IConfiguration _configuration;
+    private readonly IUnitOfWork<JSIL_IdentityDbContext> _unitOfWork;
 
-    public AccountService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILogService logService, IConfiguration configuration)
+    public AccountService(UserManager<ApplicationUser> userManager, ILogService logService, IConfiguration configuration, IUnitOfWork<JSIL_IdentityDbContext> unitOfWork)
     {
         _userManager = userManager;
-        _roleManager = roleManager;
         _logService = logService;
         _configuration = configuration;
+        _unitOfWork = unitOfWork;
     }
+
+
+
     #endregion
 
-    #region RegisterAsync
-    public async Task<ResponseDto> RegisterAsync(RegisterDto registerDto)
+    #region UpdateAsycx
+    public async Task<ResponseDto> UpdateAsync(AccountDto model)
     {
-        var isExistsUser = await _userManager.FindByNameAsync(registerDto.UserName);
-        if (isExistsUser is not null)
+        var existingUser = await _userManager.FindByNameAsync(model.UserName);
+        if (existingUser is null)
+        {
             return new ResponseDto()
             {
                 IsSucceed = false,
                 StatusCode = 409,
+                Message = "UserName doesn't exist"
+            };
+        }
+        // Update properties of the existing user
+        existingUser.FullName = model.FullName;
+        existingUser.Email = model.Email;
+        existingUser.Address = model.Address;
+        existingUser.PhoneNumber = model.PhoneNumber;
+        existingUser.RegionId = model.RegionId;
+        existingUser.RegionHeadId = model.RegionHeadId;
+        existingUser.Designation = model.Designation;
+        existingUser.LineManagerId = model.LineManagerId;
+        existingUser.DC_Code = model.DC_Code; 
+
+        var updateUserResult = await _userManager.UpdateAsync(existingUser);
+
+        if (!updateUserResult.Succeeded)
+        {
+            var errorString = "User update failed because: ";
+            foreach (var error in updateUserResult.Errors)
+            {
+                errorString += " # " + error.Description;
+            }
+            return new ResponseDto()
+            {
+                IsSucceed = false,
+                StatusCode = 400,
+                Message = errorString
+            };
+        }
+
+        // Log the update operation
+        await _logService.LogInformation("Update to Website", existingUser.UserName);
+
+        return new ResponseDto()
+        {
+            IsSucceed = true,
+            StatusCode = 200,
+            Message = "User updated successfully"
+        };
+    }
+
+    #endregion
+    #region RegisterAsync
+    public async Task<ResponseDto> RegisterAsync(AccountDto model)
+    {
+        var isExistsUser = await _userManager.FindByNameAsync(model.UserName);
+        if (isExistsUser is not null)
+            return new ResponseDto()
+            {
+                IsSucceed = false,
+                StatusCode = StatusCodes.Status409Conflict,
                 Message = "UserName Already Exists"
             };
+        ApplicationUser newUser = ModelConverter.ConvertTo<AccountDto, ApplicationUser>(model);
+        newUser.SecurityStamp = Guid.NewGuid().ToString();
+        newUser.DefaultPassword = true;
 
-        ApplicationUser newUser = new ApplicationUser()
-        {
-            Email = registerDto.Email,
-            UserName = registerDto.UserName,
-            Address = registerDto.Address,
-            SecurityStamp = Guid.NewGuid().ToString()
-        };
-
-        var createUserResult = await _userManager.CreateAsync(newUser, registerDto.Password);
+        var createUserResult = await _userManager.CreateAsync(newUser, "P@ss1234");
 
         if (!createUserResult.Succeeded)
         {
@@ -70,7 +125,7 @@ public class AccountService : IAccountService
 
         // Add a Default USER Role to all users
         await _userManager.AddToRoleAsync(newUser, userRole.AppUser.ToString());
-        await _logService.SaveNewLog(newUser.UserName, "Registered to Website");
+        await _logService.LogInformation("Registered to Website", newUser.UserName);
 
         return new ResponseDto()
         {
@@ -84,27 +139,82 @@ public class AccountService : IAccountService
     #region LoginAsync
     public async Task<LoginServiceResponseDto?> LoginAsync(LoginDto loginDto)
     {
-        // Find user with username
+        // Initialize response object
+        LoginServiceResponseDto resp = new LoginServiceResponseDto();
+
+        #region User Validation
+
+        // Commit: Find user with username
         var user = await _userManager.FindByNameAsync(loginDto.UserName);
         if (user is null)
-            return null;
+        {
+            // Commit: Return unauthorized if user is not found
+            resp.ResponseCode = StatusCodes.Status401Unauthorized;
+            return resp;
+        }
 
-        // check password of user
+        // Commit: Check if user account is enabled
+        bool enableUser = await _userManager.GetLockoutEnabledAsync(user);
+        if (!enableUser)
+        {
+            // Commit: Return locked response if user is disabled
+            resp.ResponseCode = StatusCodes.Status423Locked;
+            return resp;
+        }
+
+        #endregion
+
+        #region Password Validation
+
+        // Commit: Check user's password
         var isPasswordCorrect = await _userManager.CheckPasswordAsync(user, loginDto.Password);
         if (!isPasswordCorrect)
-            return null;
-
-        // Return Token and userInfo to front-end
-        var newToken = await GenerateJWTTokenAsync(user);
-        var roles = await _userManager.GetRolesAsync(user);
-        var userInfo = GenerateUserInfoObject(user, roles);
-        await _logService.SaveNewLog(user.UserName, "New Login");
-
-        return new LoginServiceResponseDto()
         {
-            NewToken = newToken,
-            UserInfo = userInfo
-        };
+            // Commit: Increment failed login count and check access attempts
+            await _userManager.AccessFailedAsync(user);
+            var countFailed = await _userManager.GetAccessFailedCountAsync(user);
+
+            if (countFailed > 3)
+            {
+                bool isSuperAdmin = await _userManager.IsInRoleAsync(user, userRole.SuperAdmin.ToString());
+                // Commit: Lock the account after 5 failed attempts
+                resp.ResponseCode = StatusCodes.Status429TooManyRequests;
+                if (!isSuperAdmin)
+                    await _userManager.SetLockoutEnabledAsync(user, false);
+
+            }
+            else
+            {
+                // Commit: Failed dependency response for incorrect password
+                resp.ResponseCode = StatusCodes.Status424FailedDependency;
+            }
+            return resp;
+        }
+
+        // Commit: Reset failed access count on successful login
+        await _userManager.ResetAccessFailedCountAsync(user);
+
+        #endregion
+
+        #region Successful Login
+
+        // Commit: Retrieve user roles
+        var roles = await _userManager.GetRolesAsync(user);
+
+        // Commit: Generate user information object
+        var userInfo = GenerateUserInfoObject(user, roles);
+
+        // Commit: Log the successful login
+        await _logService.LogInformation("New Login", user.UserName);
+
+        // Commit: Generate JWT token for the user
+        resp.ResponseCode = StatusCodes.Status200OK;
+        resp.NewToken = await GenerateJWTTokenAsync(user);
+        resp.UserInfo = userInfo;
+
+        #endregion
+
+        return resp;
     }
     #endregion
 
@@ -125,10 +235,10 @@ public class AccountService : IAccountService
         if (User.IsInRole(userRole.Admin.ToString()))
         {
             // User is admin
-            if (updateRoleDto.NewRole == userRole.AppUser || updateRoleDto.NewRole == userRole.Manager)
+            if (updateRoleDto.NewRole == userRole.AppUser || updateRoleDto.NewRole == userRole.RegionalManager || updateRoleDto.NewRole == userRole.RelationshipManager)
             {
                 // admin can change the role of everyone except for owners and admins
-                if (userRoles.Any(q => q.Equals(userRole.Manager.ToString()) || q.Equals(userRole.Admin.ToString())))
+                if (userRoles.Any(q => q.Equals(userRole.Admin.ToString()) || q.Equals(userRole.SuperAdmin.ToString())))
                 {
                     return new ResponseDto()
                     {
@@ -141,7 +251,7 @@ public class AccountService : IAccountService
                 {
                     await _userManager.RemoveFromRolesAsync(user, userRoles);
                     await _userManager.AddToRoleAsync(user, updateRoleDto.NewRole.ToString());
-                    await _logService.SaveNewLog(user.UserName, "User Roles Updated");
+                    await _logService.LogInformation("User Roles Updated", user.UserName);
                     return new ResponseDto()
                     {
                         IsSucceed = true,
@@ -173,7 +283,7 @@ public class AccountService : IAccountService
             {
                 await _userManager.RemoveFromRolesAsync(user, userRoles);
                 await _userManager.AddToRoleAsync(user, updateRoleDto.NewRole.ToString());
-                await _logService.SaveNewLog(user.UserName, "User Roles Updated");
+                await _logService.LogInformation("User Roles Updated", user.UserName);
 
                 return new ResponseDto()
                 {
@@ -186,7 +296,7 @@ public class AccountService : IAccountService
     }
     #endregion
 
-    #region MeAsync
+    #region GenerateTokenInternalAsync
     public async Task<LoginServiceResponseDto?> MeAsync(MeDto meDto)
     {
         ClaimsPrincipal handler = new JwtSecurityTokenHandler().ValidateToken(meDto.Token, new TokenValidationParameters()
@@ -197,22 +307,39 @@ public class AccountService : IAccountService
             ValidAudience = _configuration["JWT:ValidAudience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]))
         }, out SecurityToken securityToken);
-
+        LoginServiceResponseDto resp = new LoginServiceResponseDto();
         string decodedUserName = handler.Claims.First(q => q.Type == ClaimTypes.Name).Value;
         if (decodedUserName is null)
-            return null;
+        {
+            resp.ResponseCode = StatusCodes.Status401Unauthorized;
+            return resp;
+        }
 
         var user = await _userManager.FindByNameAsync(decodedUserName);
+
         if (user is null)
-            return null;
+        {
+            resp.ResponseCode = StatusCodes.Status401Unauthorized;
+            return resp;
+        }
+        // Commit: Check if user account is enabled
+        bool enableUser = await _userManager.GetLockoutEnabledAsync(user);
+        if (!enableUser)
+        {
+            // Commit: Return locked response if user is disabled
+            resp.ResponseCode = StatusCodes.Status423Locked;
+            return resp;
+        }
+
 
         var newToken = await GenerateJWTTokenAsync(user);
         var roles = await _userManager.GetRolesAsync(user);
         var userInfo = GenerateUserInfoObject(user, roles);
-        await _logService.SaveNewLog(user.UserName, "New Token Generated");
+        await _logService.LogInformation("New Token Generated", user.UserName);
 
         return new LoginServiceResponseDto()
         {
+            ResponseCode = StatusCodes.Status200OK,
             NewToken = newToken,
             UserInfo = userInfo
         };
@@ -220,20 +347,47 @@ public class AccountService : IAccountService
     #endregion
 
     #region GetUsersListAsync
-    public async Task<IEnumerable<UserInfoResult>> GetUsersListAsync()
+    public async Task<IEnumerable<UserInfoResultlist>> GetUsersListAsync(UsersFilterDto filter)
     {
-        var users = await _userManager.Users.ToListAsync();
 
-        List<UserInfoResult> userInfoResults = new List<UserInfoResult>();
+        string qry = @$"Select u.Id, u.Address, u.Email, u.FullName, u.UserName,  u.PhoneNumber, u.CreatedAt, r.Name as Role,u.LockoutEnabled,
+                        u.Designation,u.DC_Code, rr.Name as Region 
+                        from AspNetUsers u
+                        left join AspNetUserRoles ur on u.Id = ur.UserId
+                        left join AspNetRoles r on ur.RoleId = r.Id
+				        left join Regions rr on rr.Id = u.RegionId
+				       ";
 
-        foreach (var user in users)
+        List<string> filters = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(filter.Email))
+            filters.Add($"u.Email = '{filter.Email}'");
+
+        if (filter.StartDate != null)
+            filters.Add($"u.CreatedAt >= '{filter.StartDate:yyyy-MM-dd}'");
+
+        if (filter.EndDate != null)
         {
-            var roles = await _userManager.GetRolesAsync(user);
-            var userInfo = GenerateUserInfoObject(user, roles);
-            userInfoResults.Add(userInfo);
+            filter.EndDate = filter.EndDate.Value.AddDays(1);
+            filters.Add($"u.CreatedAt < '{filter.EndDate:yyyy-MM-dd}'"); // Use '<' for exclusive date range
         }
 
-        return userInfoResults;
+        if (filter.UserRoles != null && filter.UserRoles.Any())
+        {
+            string roles = string.Join(", ", filter.UserRoles.Select(r => $"'{r}'"));
+            filters.Add($"r.Name IN ({roles})");
+        }
+
+        // Combine all filters into the WHERE clause if there are any
+        string FilterQry = filters.Count > 0 ? " WHERE " + string.Join(" AND ", filters) : "";
+
+        // Final query
+        string finalQuery = qry + FilterQry;
+
+
+        var data = _unitOfWork.SqlQuery<UserInfoResultlist>(finalQuery);
+        //var data = await _dbContext.Database.SqlQueryRaw<UserInfoResultlist>(finalQuery).ToListAsync();
+        return data;
     }
     #endregion
 
@@ -305,10 +459,87 @@ public class AccountService : IAccountService
             FullName = user.FullName,
             UserName = user.UserName,
             Email = user.Email,
+            Address = user.Address,
+            DC_Code = user.DC_Code,
+            Designation = user.Designation,
+            LineManagerId = user.LineManagerId,
+            RegionHeadId = user.RegionHeadId,
+            RegionId = user.RegionId,
+
+            PhoneNumber = user.PhoneNumber,
             CreatedAt = user.CreatedAt,
             Roles = Roles
         };
     }
+
+
+    public async Task<ResponseDto> LockoutEnabled(UserStatusDto model)
+    {
+        ResponseDto resp = new ResponseDto();
+        var user = await _userManager.FindByNameAsync(model.UserName);
+        if (user is null)
+        {
+            resp.IsSucceed = false;
+            resp.Message = "User not found";
+            resp.StatusCode = StatusCodes.Status404NotFound;
+        }
+        await _userManager.SetLockoutEnabledAsync(user, model.LockoutEnabled);
+        string Mes = model.LockoutEnabled ? "Unblock" : "Block";
+        resp.Message = $"User {Mes} Successfully";
+        resp.StatusCode = StatusCodes.Status200OK;
+        return resp;
+    }
+
+    public async Task<ResponseDto> ResetPasswordSetDefault(ResetPasswordSetDefaultDto model)
+    {
+
+        ResponseDto resp = new ResponseDto();
+        var user = await _userManager.FindByNameAsync(model.UserName);
+        if (user is null)
+        {
+            resp.IsSucceed = false;
+            resp.Message = "User not found";
+            resp.StatusCode = StatusCodes.Status404NotFound;
+        }
+        user.DefaultPassword = true;
+        user.SecurityStamp = Guid.NewGuid().ToString();
+        await _userManager.UpdateAsync(user);
+        string Token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        await _userManager.ResetPasswordAsync(user, Token, "P@ss1234");
+        resp.Message = "Reset Password Successfully";
+        resp.StatusCode = StatusCodes.Status200OK;
+        return resp;
+    }
+
+
+
+
     #endregion
+    public async Task<ResponseDto> GetAllRegionalAndRelationshipUsersAsync()
+    {
+        ResponseDto resp = new ResponseDto();
+        var data = new UserNameListDto();
+
+        // Get users in RegionalManager role
+        var regionalUsers = await _userManager.GetUsersInRoleAsync(userRole.RegionalManager.ToString());
+        data.RegionalUser = regionalUsers.Select(user => new SelectDropDownDto
+        {
+            Id = user.Id,
+            Name = user.UserName
+        }).ToList();
+
+        // Get users in RelationshipManager role
+        var relationshipUsers = await _userManager.GetUsersInRoleAsync(userRole.RelationshipManager.ToString());
+        data.RelationShipUser = relationshipUsers.Select(user => new SelectDropDownDto
+        {
+            Id = user.Id,
+            Name = user.UserName
+        }).ToList();
+        data.Regions = _unitOfWork.SqlQuery<SelectDropDownDto>("SELECT CAST(Id AS VARCHAR)as Id,  Name FROM Regions");
+        resp.Result = data;
+        return resp;
+    }
+
+
 
 }

@@ -1,7 +1,6 @@
 ﻿using App.DataAccessLayer.EntityModel.SQL.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using System.Data.Common;
 using System.Linq.Expressions;
 
 namespace App.Infrastructure;
@@ -173,67 +172,14 @@ public class Repository<T> : IRepository<T> where T : class
         _context.Entry(entity).State = EntityState.Modified;
         return entity;
     }
-
-    public IEnumerable<T> SqlQuery<T>(string query, List<DbParameter>? parameters = null)
+    public bool Exists(Expression<Func<T, bool>> filter)
     {
-        if (string.IsNullOrEmpty(query))
-        {
-            throw new ArgumentException("Query cannot be null or empty.", nameof(query));
-        }
-
-        if (parameters == null || !parameters.Any())
-        {
-            return _context.Database.SqlQueryRaw<T>(query).ToList();
-        }
-
-        // Add parameters to the query execution
-        return _context.Database.SqlQueryRaw<T>(query, parameters.ToArray()).ToList();
+        return _dbset.AsNoTracking().Any(filter);
     }
 
-    public IEnumerable<T> ExecuteStoredProcedure<T>(string storedProcedureName, List<DbParameter>? parameters = null) where T : new()
+    public async Task<bool> ExistsAsync(Expression<Func<T, bool>> filter)
     {
-        if (string.IsNullOrWhiteSpace(storedProcedureName))
-            throw new ArgumentException("Stored procedure name cannot be null or empty.", nameof(storedProcedureName));
-
-        using var command = _context.Database.GetDbConnection().CreateCommand();
-        command.CommandText = storedProcedureName;
-        command.CommandType = CommandType.StoredProcedure;
-
-        if (parameters != null)
-            foreach (var param in parameters)
-                command.Parameters.Add(param);
-
-        _context.Database.OpenConnection();
-        using var reader = command.ExecuteReader();
-        var result = new List<T>();
-
-        while (reader.Read())
-        {
-            var value = typeof(T).IsValueType || typeof(T) == typeof(string)
-                ? reader.GetFieldValue<T>(0)
-                : MapToModel<T>(reader); // Calls MapToModel<T> for non-primitive types.
-            result.Add(value);
-        }
-
-        return result;
+        return await _dbset.AsNoTracking().AnyAsync(filter);
     }
-
-    private T MapToModel<T>(IDataReader reader) where T : new()
-    {
-        var obj = new T();
-        var properties = typeof(T).GetProperties();
-
-        foreach (var prop in properties)
-        {
-            if (!reader.IsDBNull(reader.GetOrdinal(prop.Name)))
-            {
-                var value = reader.GetValue(reader.GetOrdinal(prop.Name));
-                prop.SetValue(obj, Convert.ChangeType(value, prop.PropertyType));
-            }
-        }
-
-        return obj;
-    }
-
 }
 

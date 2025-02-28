@@ -1,18 +1,13 @@
 export const PATH_PUBLIC = {
     home: '/',
-    register: '/register',
     login: '/login',
+    logout: '/logout',
     unauthorized: '/unauthorized',
     notFound: '/404',
   };
   
   export const PATH_DASHBOARD = {
     dashboard: '/dashboard',
-    usersManagement: '/dashboard/users-management',
-    updateRole: '/dashboard/update-role/:userName',
-    sendMessage: '/dashboard/send-message',
-    inbox: '/dashboard/inbox',
-    allMessages: '/dashboard/all-messages',
     systemLogs: '/dashboard/system-logs',
     myLogs: '/dashboard/my-logs',
     owner: '/dashboard/owner',
@@ -20,3 +15,10 @@ export const PATH_PUBLIC = {
     manager: '/dashboard/manager',
     user: '/dashboard/user',
   };
+  export const PATH_USER ={
+    user:'/users',
+    add:'/users/add',
+    update:'/users/update/:userName',
+    profile:'/users/profile',
+    changePassword:'/users/changePassword'
+  }

@@ -1,11 +1,15 @@
-import React from 'react'
+import { Toaster } from 'react-hot-toast';
+import GlobalRouter from './routes';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 
 const App = () => {
   return (
-    <div className='bg-red-500 p-8'>
-      App
+    <div>
+      <GlobalRouter />
+      <Toaster />
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;

@@ -11,6 +11,7 @@ namespace App.API.Controllers
 
         [HttpGet]
         [Route("get-public")]
+        [Authorize]
         public IActionResult GetPublicData()
         {
             return Ok("Public Data");
@@ -26,7 +27,7 @@ namespace App.API.Controllers
 
         [HttpGet]
         [Route("get-manager-role")]
-        [Authorize(Roles = StaticUserRoles.Manager)]
+        [Authorize(Roles = StaticUserRoles.RegionalManager)]
         public IActionResult GetManagerData()
         {
             return Ok("Manager Role Data");

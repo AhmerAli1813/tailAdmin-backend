@@ -1,4 +1,5 @@
-﻿using App.Services.Dto.Auth;
+﻿using App.Services.Dto.Account;
+using App.Services.Dto.General;
 using App.Services.Helper;
 using App.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
@@ -21,25 +22,39 @@ namespace App.API.Controllers
         // Route -> Register
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        [Authorize(Roles = StaticUserRoles.CountryHeadAdminRole)]
+
+        public async Task<IActionResult> Register([FromBody] AccountDto registerDto)
         {
             var registerResult = await _authService.RegisterAsync(registerDto);
             return StatusCode(registerResult.StatusCode, registerResult.Message);
         }
+        // Route -> Register
+        [HttpPost]
+        [Route("update")]
+        public async Task<IActionResult> update([FromBody] AccountDto registerDto)
+        {
+            var registerResult = await _authService.UpdateAsync(registerDto);
+            return StatusCode(registerResult.StatusCode, registerResult.Message);
+        }
 
-        // Route -> Login
         [HttpPost]
         [Route("login")]
+        [AllowAnonymous]
         public async Task<ActionResult<LoginServiceResponseDto>> Login([FromBody] LoginDto loginDto)
         {
-            var loginResult = await _authService.LoginAsync(loginDto);
+            LoginServiceResponseDto? loginResult = await _authService.LoginAsync(loginDto);
 
-            if (loginResult is null)
+            if (loginResult is null || loginResult.ResponseCode == StatusCodes.Status401Unauthorized)
             {
                 return Unauthorized("Your credentials are invalid. Please contact to an Admin");
             }
+            if (loginResult.ResponseCode == StatusCodes.Status200OK)
+            {
 
-            return Ok(loginResult);
+                return Ok(loginResult);
+            }
+            return StatusCode(loginResult.ResponseCode);
         }
 
         // Route -> Update User Role
@@ -48,7 +63,7 @@ namespace App.API.Controllers
         // Manager and User Roles don't have access to this Route
         [HttpPost]
         [Route("update-role")]
-        [Authorize(Roles = StaticUserRoles.SuperAdmin)]
+        [Authorize(Roles = StaticUserRoles.SuperAdmin_Admin_Manager)]
         public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleDto updateRoleDto)
         {
             var updateRoleResult = await _authService.UpdateRoleAsync(User, updateRoleDto);
@@ -66,18 +81,20 @@ namespace App.API.Controllers
         // Route -> getting data of a user from it's JWT
         [HttpPost]
         [Route("me")]
-        public async Task<ActionResult<LoginServiceResponseDto>> Me([FromBody] MeDto token)
+        [AllowAnonymous]
+
+        public async Task<IActionResult> Me([FromBody] MeDto token)
         {
             try
             {
-                var me = await _authService.MeAsync(token);
+                LoginServiceResponseDto? me = await _authService.MeAsync(token);
                 if (me is not null)
                 {
                     return Ok(me);
                 }
                 else
                 {
-                    return Unauthorized("Invalid Token");
+                    return StatusCode(me.ResponseCode);
                 }
             }
             catch (Exception)
@@ -87,14 +104,22 @@ namespace App.API.Controllers
         }
 
         // Route -> List of all users with details
-        [HttpGet]
+        [HttpPost]
         [Route("users")]
-        public async Task<ActionResult<IEnumerable<UserInfoResult>>> GetUsersList()
+        public async Task<ActionResult<IEnumerable<UserInfoResult>>> GetUsersList(UsersFilterDto filterDto)
         {
-            var usersList = await _authService.GetUsersListAsync();
+            try
+            {
 
-            return Ok(usersList);
+                var usersList = await _authService.GetUsersListAsync(filterDto);
+                return Ok(usersList);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Errro: " + ex.Message);
+            }
         }
+
 
         // Route -> Get a User by UserName
         [HttpGet]
@@ -120,6 +145,30 @@ namespace App.API.Controllers
             var usernames = await _authService.GetUsernamesListAsync();
 
             return Ok(usernames);
+        }
+        [HttpGet]
+        [Route("get-Regional-RelationShip-user-list")]
+        public async Task<IActionResult> GetRegionalAndRelationshipUsersAsync()
+        {
+         return   Ok(await _authService.GetAllRegionalAndRelationshipUsersAsync());
+        }
+        
+
+        [HttpPost]
+        [Route("lock-user")]
+        [Authorize(Roles = StaticUserRoles.CountryHeadAdminRole)]
+        public async Task<IActionResult> LockoutUser(UserStatusDto req)
+        {
+            ResponseDto a = await _authService.LockoutEnabled(req);
+            return a.StatusCode == StatusCodes.Status200OK ? Ok(a) : StatusCode(a.StatusCode, a.Message);
+        }
+        [HttpPost]
+        [Route("user-set-default-password")]
+        [Authorize(Roles = StaticUserRoles.CountryHeadAdminRole)]
+        public async Task<IActionResult> ResetPasswordSetDefault(ResetPasswordSetDefaultDto req)
+        {
+            ResponseDto a = await _authService.ResetPasswordSetDefault(req);
+            return a.StatusCode == StatusCodes.Status200OK ? Ok(a) : StatusCode(a.StatusCode, a.Message);
         }
     }
 }

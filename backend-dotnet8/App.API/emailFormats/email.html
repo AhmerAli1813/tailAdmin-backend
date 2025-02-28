@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Transaction Instructions</title>
+</head>
+<body>
+    <h2>Your investment transaction request has been successfully initiated with Reference No. ##refno##.</h2>
+    <p>This reference number is valid till <strong>##nextdate##</strong>.</p>
+    <h3>Payment Instructions</h3>
+    <ol>
+        <li>Login to the Internet Banking of your bank or visit the bank ATM.</li>
+        <li>Proceed to the Utility Bill payment option.</li>
+        <li>Select Add Bills.</li>
+        <li>Select "KUICKPAY" option in billing company section.</li>
+        <li>Please enter your transaction reference number in the consumer number field to proceed with payment.</li>
+        <li>Submit the transaction.</li>
+    </ol>
+    <p>You will receive the transaction confirmation SMS from JS Investments in respect of your investment followed by an acknowledgment of the investment on the email address provided by you.</p>
+    <p>Please note that units will be priced at NAV applicable against realization of sales proceeds in mutual funds' bank account from KuickPay using 1-Link facility.</p>
+    <p>If you have any queries, please contact our customer services department via email at <a href="mailto:ir@jsil.com">ir@jsil.com</a> or call on our toll free number <strong>0800-00887</strong>.</p>
+    <p>Thank you for Investing with us!</p>
+    <p>Regards,<br>Investors Relations<br>JS Investments Limited</p>
+    <script>
+        // Get the current date
+        var now = new Date();
+        
+        // Get tomorrow's date
+        var tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Format the date
+        var day = tomorrow.getDate();
+        var month = tomorrow.getMonth() + 1; // Month is zero-based
+        var year = tomorrow.getFullYear();
+
+        // Format the date
+        var formattedDate = day + '/' + month + '/' + year;
+
+        // Update the expiryDate element with the formatted date
+        document.getElementById('expiryDate').innerHTML = formattedDate;
+    </script>
+</body>
+</html>

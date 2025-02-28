@@ -23,6 +23,7 @@ public class DbInitializer : IDbInitializer
     {
         // Log the initialization process
         Console.WriteLine("Initializing database...");
+
         //if you doest have any role and user then commite these condition they help you to create a user and roles ,Condition if (!await _context.Database.EnsureCreatedAsync())
         // Check if the database exists
         if (!_context.Users.Any())
@@ -45,23 +46,22 @@ public class DbInitializer : IDbInitializer
             }
 
             // Create a dummy user if it doesn't exist
-            var dummyUserEmail = "admin@outlook.com";
+            var dummyUserEmail = "erpteam@jsil.com";
             var existingUser = await _userManager.FindByEmailAsync(dummyUserEmail);
 
             if (existingUser == null)
             {
                 var user = new ApplicationUser
                 {
-                    UserName = "admin",
-                    FullName = "Ahmer Ali",
+                    UserName = "SuperAdmin",
+                    FullName = "SuperAdmin",
                     Email = dummyUserEmail,
                     PhoneNumber = "1234567890",
                     EmailConfirmed = true,
-                    FatherName = "Afzal",
-                    Address="Karachi"
+                    Address = "Karachi"
                 };
 
-                var result = await _userManager.CreateAsync(user, "Admin@123");
+                var result = await _userManager.CreateAsync(user, "SuperAdmin@123");
                 if (result.Succeeded)
                 {
                     // Assign a role to the dummy user

@@ -1,6 +1,7 @@
 ﻿using App.DataAccessLayer.EntityModel.SQL.Model;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace App.DataAccessLayer.EntityModel.SQL.Data
 {
@@ -15,11 +16,27 @@ namespace App.DataAccessLayer.EntityModel.SQL.Data
 
         }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
-        public DbSet<Log> Logs { get; set; }
-        public DbSet<Message>  Messages { get; set; }
-        protected override void OnModelCreating(ModelBuilder builder)
+        public DbSet<OpenApiReqLog> OpenApiReqLogs { get; set; }
+        public DbSet<OpenEmailLog> OpenEmailLogs { get; set; }
+        public DbSet<AppsLog> AppsLogs { get; set; }
+
+        public DbSet<Region> Regions { get; set; }
+
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(builder);
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<ApplicationUser>()
+       .HasOne(u => u.RegionHead)
+       .WithMany()
+       .HasForeignKey(u => u.RegionHeadId)
+       .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasOne(u => u.LineManager)
+                .WithMany()
+                .HasForeignKey(u => u.LineManagerId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

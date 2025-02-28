@@ -1,10 +1,10 @@
 
+using App.API.Helper;
 using App.DataAccessLayer.EntityModel.SQL.Data;
 using App.DataAccessLayer.EntityModel.SQL.Model;
-using App.Infrastructure;
-using App.Services.Implemantation;
 using App.Services.Interface;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -24,15 +24,11 @@ builder.Services
 // DB
 builder.Services.AddDbContext<JSIL_IdentityDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection") ,sql=>sql.MigrationsAssembly("App.DataAccessLayer"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"), sql => sql.MigrationsAssembly("App.DataAccessLayer"));
 });
 
-// Dependency Injection
-builder.Services.AddScoped<ILogService, LogService>();
-builder.Services.AddScoped<IMessageService, MessageService>();
-builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<IUnitOfWork<JSIL_IdentityDbContext>, UnitOfWork>();
-builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+
+ServiceRegistrationHelper.RegisterServices(builder.Services);
 // Add Identity
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>()
@@ -105,6 +101,12 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 var app = builder.Build();
 // Initialize database
@@ -120,12 +122,22 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseSwagger();
+app.UseSwaggerUI();
+// Use the OriginValidationMiddleware before CORS
+//app.UseMiddleware<OriginValidationMiddleware>();
+
 app.UseCors(options =>
 {
+    var allowedOrigins = builder.Configuration["JWT:OtherAudience"]
+        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+        .Select(o => o.Trim())
+        .ToArray();
+
     options
-    .AllowAnyHeader()
-    .AllowAnyMethod()
-    .AllowAnyOrigin();
+        .WithOrigins(allowedOrigins) // Allow only these origins
+        .AllowAnyHeader()
+        .AllowAnyMethod();
 });
 
 app.UseHttpsRedirection();

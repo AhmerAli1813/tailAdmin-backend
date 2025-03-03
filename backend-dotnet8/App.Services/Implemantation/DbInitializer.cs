@@ -10,9 +10,9 @@ public class DbInitializer : IDbInitializer
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly JSIL_IdentityDbContext _context;
+    private readonly POSDbContext _context;
 
-    public DbInitializer(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, JSIL_IdentityDbContext context)
+    public DbInitializer(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, POSDbContext context)
     {
         _userManager = userManager;
         _roleManager = roleManager;

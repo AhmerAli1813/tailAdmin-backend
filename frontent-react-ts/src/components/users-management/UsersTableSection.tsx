@@ -234,41 +234,7 @@ const UsersTableSection = ({ usersList, onRefresh }: IProps) => {
             ))}
           </tbody>
         </DataTable>
-        {/* <table id="dataTable" className="table table-striped table-bordered w-100">
       
-        <tbody>
-        {usersList.map((user, index) => (
-        <tr
-          key={index}
-          className='grid grid-cols-7 px-2 h-12 my-1 border border-gray-200 hover:bg-gray-200 rounded-md'
-        >
-          <td >{index + 1}</td>
-          <td >{user.fullName}</td>
-          <td className=' font-semibold'>{user.userName}</td>
-          <td className=' font-semibold'>{user.fatherName}</td>
-          <td className=' font-semibold'>{user.email}</td>
-          <td className=' font-semibold'>{user.phoneNumber}</td>
-          <td className='flex justify-center items-center'>
-            <span className={RoleClassNameCreator(user.roles)}>{user.roles}</span>
-          </td>
-          <td >{moment(user.createdAt).format('YYYY-MM-DD | HH:mm')}</td>
-          <td >
-            <Button
-              label='Update Role'
-              onClick={() => openModal(user.userName)}
-              type='button'
-              variant='primary'
-              ClassName='btn-sm'
-              disabled={!isAuthorizedForUpdateRole(loggedInUser!.roles[0], user.roles[0])}
-            />
-            <Link to={`/users/update/${user.userName}` } className='ms-1 btn btn-primary btn-sm'    >
-                Edit
-            </Link> 
-                  </td>
-        </tr>
-      ))}
-        </tbody>
-      </table> */}
       </div>
       {/* Modal */}
       <Modal isOpen={isModalOpen} onClose={closeModal} title="Update Role">

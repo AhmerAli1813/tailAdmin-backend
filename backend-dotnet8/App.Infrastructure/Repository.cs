@@ -7,10 +7,10 @@ namespace App.Infrastructure;
 
 public class Repository<T> : IRepository<T> where T : class
 {
-    private readonly JSIL_IdentityDbContext _context;
+    private readonly POSDbContext _context;
     internal DbSet<T> _dbset;
 
-    public Repository(JSIL_IdentityDbContext context)
+    public Repository(POSDbContext context)
     {
         _context = context;
         _dbset = _context.Set<T>();

@@ -13,9 +13,9 @@ namespace App.Services.Implemantation;
 public class LogService : ILogService
 {
     #region Constructor & DI
-    private readonly IUnitOfWork<JSIL_IdentityDbContext> _context;
+    private readonly IUnitOfWork _context;
 
-    public LogService(IUnitOfWork<JSIL_IdentityDbContext> context)
+    public LogService(IUnitOfWork context)
     {
         _context = context;
     }
@@ -34,7 +34,7 @@ public class LogService : ILogService
             Message = Description,
             CreatedAt = DateTime.Now,
             Level = "Information",
-             
+
         };
 
         await _context.GenericRepository<AppsLog>().AddAsync(newLog);
@@ -47,9 +47,9 @@ public class LogService : ILogService
     {
         GetLogsDetail resp = new GetLogsDetail();
         var logs = await _context.GenericRepository<AppsLog>().GetAllAsync(orderby: o => o.OrderByDescending(x => x.CreatedAt));
-         var list=  ModelConverter.ConvertTo<AppsLog, GetLogDto>(logs);
-       resp.List =  list;
-           var Toal= _context.SqlQuery<LogCountDto>("Select count(*) Total, Level  from AppsLogs a group by Level");
+        var list = ModelConverter.ConvertTo<AppsLog, GetLogDto>(logs);
+        resp.List = list;
+        var Toal = _context.SqlQuery<LogCountDto>("Select count(*) Total, Level  from AppsLogs a group by Level");
         resp.Total = Toal;
         return resp;
 
@@ -128,7 +128,7 @@ public class LogService : ILogService
 
     public async Task<long> LogWarning(string message, string? UserName = null, Dictionary<string, object>? properties = null)
     {
-        return await SaveLogToDatabase("Warning",UserName, message, null, properties);
+        return await SaveLogToDatabase("Warning", UserName, message, null, properties);
     }
 
     public async Task<long> LogError(string message, string? UserName, Dictionary<string, object>? properties = null)
@@ -140,7 +140,7 @@ public class LogService : ILogService
         return await SaveLogToDatabase("Exception", UserName, message, exception, properties);
     }
 
-    private async Task<long> SaveLogToDatabase(string level, string? UserName,string message, Exception? exception, Dictionary<string, object>? properties)
+    private async Task<long> SaveLogToDatabase(string level, string? UserName, string message, Exception? exception, Dictionary<string, object>? properties)
     {
         var log = new AppsLog
         {
@@ -151,11 +151,11 @@ public class LogService : ILogService
             Properties = properties != null
                 ? System.Text.Json.JsonSerializer.Serialize(properties)
                 : null,
-             UserName = UserName
+            UserName = UserName
 
         };
 
-     await   _context.GenericRepository<AppsLog>().AddAsync(log);
+        await _context.GenericRepository<AppsLog>().AddAsync(log);
         _context.Save();
         return log.Id;
     }

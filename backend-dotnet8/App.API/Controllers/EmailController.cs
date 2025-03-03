@@ -1,7 +1,6 @@
 ﻿using App.Services.Dto.Log;
 using App.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace App.API.Controllers

@@ -19,7 +19,7 @@ public class LogCountDto
 }
 public class GetLogsDetail
 {
-    public  IEnumerable<GetLogDto>? List { get; set; }
+    public IEnumerable<GetLogDto>? List { get; set; }
     public IEnumerable<LogCountDto>? Total { get; set; }
 
 

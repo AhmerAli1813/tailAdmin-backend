@@ -22,7 +22,7 @@ builder.Services
     });
 
 // DB
-builder.Services.AddDbContext<JSIL_IdentityDbContext>(options =>
+builder.Services.AddDbContext<POSDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"), sql => sql.MigrationsAssembly("App.DataAccessLayer"));
 });
@@ -32,7 +32,7 @@ ServiceRegistrationHelper.RegisterServices(builder.Services);
 // Add Identity
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<JSIL_IdentityDbContext>()
+    .AddEntityFrameworkStores<POSDbContext>()
     .AddDefaultTokenProviders();
 
 // Config Identity

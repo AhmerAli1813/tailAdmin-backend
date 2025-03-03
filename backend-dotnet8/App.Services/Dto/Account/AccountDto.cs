@@ -15,11 +15,6 @@ public class AccountDto
     public string? UserName { get; set; }
     [Required(ErrorMessage = "Email is required")]
     public string? Email { get; set; }
-
-    public string? DC_Code { get; set; } // Only for Regional Managers
-    public string? RegionHeadId { get; set; } // Regional Head managing the region
-    public string? LineManagerId { get; set; } //
-    public int? RegionId { get; set; } //
     public string? Designation { get; set; } //
     public string? Address { get; set; }
     public string? CNIC { get; set; }
@@ -60,9 +55,7 @@ public class UserInfoResultlist
     public string? UserName { get; set; }
     public string? PhoneNumber { get; set; }
     public string? Address { get; set; }
-    public string? DC_Code { get; set; } // Only for Regional Managers
 
-    public string? Region { get; set; } //
     public string? Designation { get; set; } //
     public string? Email { get; set; }
     public DateTime CreatedAt { get; set; }

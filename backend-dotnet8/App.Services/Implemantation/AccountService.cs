@@ -14,7 +14,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace App.Services.Implemantation;
 
@@ -24,9 +23,9 @@ public class AccountService : IAccountService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogService _logService;
     private readonly IConfiguration _configuration;
-    private readonly IUnitOfWork<JSIL_IdentityDbContext> _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public AccountService(UserManager<ApplicationUser> userManager, ILogService logService, IConfiguration configuration, IUnitOfWork<JSIL_IdentityDbContext> unitOfWork)
+    public AccountService(UserManager<ApplicationUser> userManager, ILogService logService, IConfiguration configuration, IUnitOfWork unitOfWork)
     {
         _userManager = userManager;
         _logService = logService;
@@ -56,11 +55,7 @@ public class AccountService : IAccountService
         existingUser.Email = model.Email;
         existingUser.Address = model.Address;
         existingUser.PhoneNumber = model.PhoneNumber;
-        existingUser.RegionId = model.RegionId;
-        existingUser.RegionHeadId = model.RegionHeadId;
         existingUser.Designation = model.Designation;
-        existingUser.LineManagerId = model.LineManagerId;
-        existingUser.DC_Code = model.DC_Code; 
 
         var updateUserResult = await _userManager.UpdateAsync(existingUser);
 
@@ -235,7 +230,7 @@ public class AccountService : IAccountService
         if (User.IsInRole(userRole.Admin.ToString()))
         {
             // User is admin
-            if (updateRoleDto.NewRole == userRole.AppUser || updateRoleDto.NewRole == userRole.RegionalManager || updateRoleDto.NewRole == userRole.RelationshipManager)
+            if (updateRoleDto.NewRole == userRole.AppUser || updateRoleDto.NewRole == userRole.Investor || updateRoleDto.NewRole == userRole.Salesman)
             {
                 // admin can change the role of everyone except for owners and admins
                 if (userRoles.Any(q => q.Equals(userRole.Admin.ToString()) || q.Equals(userRole.SuperAdmin.ToString())))
@@ -351,11 +346,10 @@ public class AccountService : IAccountService
     {
 
         string qry = @$"Select u.Id, u.Address, u.Email, u.FullName, u.UserName,  u.PhoneNumber, u.CreatedAt, r.Name as Role,u.LockoutEnabled,
-                        u.Designation,u.DC_Code, rr.Name as Region 
+                        u.Designation
                         from AspNetUsers u
                         left join AspNetUserRoles ur on u.Id = ur.UserId
                         left join AspNetRoles r on ur.RoleId = r.Id
-				        left join Regions rr on rr.Id = u.RegionId
 				       ";
 
         List<string> filters = new List<string>();
@@ -420,11 +414,13 @@ public class AccountService : IAccountService
     {
         var userRoles = await _userManager.GetRolesAsync(user);
 
+
         var authClaims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, user.UserName),
             new Claim(ClaimTypes.NameIdentifier, user.Id),
             new Claim("FullName", user.FullName),
+            new Claim("Designation", string.IsNullOrEmpty(user.Designation)?"--":user.Designation),
         };
 
         foreach (var userRole in userRoles)
@@ -460,11 +456,7 @@ public class AccountService : IAccountService
             UserName = user.UserName,
             Email = user.Email,
             Address = user.Address,
-            DC_Code = user.DC_Code,
             Designation = user.Designation,
-            LineManagerId = user.LineManagerId,
-            RegionHeadId = user.RegionHeadId,
-            RegionId = user.RegionId,
 
             PhoneNumber = user.PhoneNumber,
             CreatedAt = user.CreatedAt,
@@ -520,21 +512,6 @@ public class AccountService : IAccountService
         ResponseDto resp = new ResponseDto();
         var data = new UserNameListDto();
 
-        // Get users in RegionalManager role
-        var regionalUsers = await _userManager.GetUsersInRoleAsync(userRole.RegionalManager.ToString());
-        data.RegionalUser = regionalUsers.Select(user => new SelectDropDownDto
-        {
-            Id = user.Id,
-            Name = user.UserName
-        }).ToList();
-
-        // Get users in RelationshipManager role
-        var relationshipUsers = await _userManager.GetUsersInRoleAsync(userRole.RelationshipManager.ToString());
-        data.RelationShipUser = relationshipUsers.Select(user => new SelectDropDownDto
-        {
-            Id = user.Id,
-            Name = user.UserName
-        }).ToList();
         data.Regions = _unitOfWork.SqlQuery<SelectDropDownDto>("SELECT CAST(Id AS VARCHAR)as Id,  Name FROM Regions");
         resp.Result = data;
         return resp;

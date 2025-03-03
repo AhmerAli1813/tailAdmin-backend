@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Data.Common;
+﻿using System.Data.Common;
 
 namespace App.Infrastructure
 {
-    public interface IUnitOfWork<TContext> where TContext : DbContext
+    public interface IUnitOfWork
     {
         IRepository<T> GenericRepository<T>() where T : class;
         void Save();

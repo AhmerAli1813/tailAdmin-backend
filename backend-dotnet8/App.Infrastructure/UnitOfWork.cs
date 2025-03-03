@@ -6,11 +6,11 @@ using System.Data.Common;
 
 namespace App.Infrastructure
 {
-    public class UnitOfWork : IUnitOfWork<JSIL_IdentityDbContext>
+    public class UnitOfWork : IUnitOfWork
     {
-        private readonly JSIL_IdentityDbContext _DbContext;
+        private readonly POSDbContext _DbContext;
 
-        public UnitOfWork(JSIL_IdentityDbContext identityDbContext)
+        public UnitOfWork(POSDbContext identityDbContext)
         {
             _DbContext = identityDbContext;
         }

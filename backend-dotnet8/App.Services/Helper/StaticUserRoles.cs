@@ -20,8 +20,7 @@ public enum userRole
 {
     SuperAdmin = 1,
     Admin = 2,
-    RegionalManager = 3,
-    WealthManager = 4,
-    RelationshipManager = 5, // Fixed typo
-    AppUser = 6
+    Investor = 3,
+    Salesman = 4,
+    AppUser = 5
 }

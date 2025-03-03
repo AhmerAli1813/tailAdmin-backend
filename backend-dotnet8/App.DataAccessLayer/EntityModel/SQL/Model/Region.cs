@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace App.DataAccessLayer.EntityModel.SQL.Model
+﻿namespace App.DataAccessLayer.EntityModel.SQL.Model
 {
-    public class Region :BaseEntity<int>
+    public class Region : BaseEntity<int>
     {
-        public string? Name { get; set; }    
+        public string? Name { get; set; }
     }
 }

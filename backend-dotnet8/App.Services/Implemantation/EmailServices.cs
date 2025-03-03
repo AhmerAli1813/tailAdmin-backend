@@ -2,17 +2,12 @@
 using App.Services.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Mail;
 
 namespace App.Services.Implemantation;
 
-public class EmailService :IEmailService
+public class EmailService : IEmailService
 {
     private readonly IConfiguration _configuration;
     private readonly ILogService _logService;

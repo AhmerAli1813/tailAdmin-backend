@@ -150,9 +150,9 @@ namespace App.API.Controllers
         [Route("get-Regional-RelationShip-user-list")]
         public async Task<IActionResult> GetRegionalAndRelationshipUsersAsync()
         {
-         return   Ok(await _authService.GetAllRegionalAndRelationshipUsersAsync());
+            return Ok(await _authService.GetAllRegionalAndRelationshipUsersAsync());
         }
-        
+
 
         [HttpPost]
         [Route("lock-user")]

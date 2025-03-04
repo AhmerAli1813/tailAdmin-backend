@@ -14,7 +14,7 @@ const CheckBox = ({ control, label, inputName, error, ClassName }: ICheckBoxProp
       return <span className='ms-1 text-danger'>{error}</span>;
     }
     if (label) {
-      return <label htmlFor={inputName}  className='ms-1 form-check-label font-semibold'>{label}</label>;
+      return <label htmlFor={inputName}  className='flex cursor-pointer select-none items-center'>{label}</label>;
     }
     return null;
   };
@@ -27,6 +27,7 @@ const CheckBox = ({ control, label, inputName, error, ClassName }: ICheckBoxProp
         name={inputName}
         control={control}
         render={({ field }) => (
+          
           <input
           type="checkbox"
           id={inputName}

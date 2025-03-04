@@ -1,46 +1,60 @@
+import { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { PATH_DASHBOARD, PATH_PUBLIC, PATH_USER } from './paths';
+import { PATH_DASHBOARD, PATH_PUBLIC, PATH_USER, PATH_UI } from './paths';
+import { allAccessRoles,  adminAccessRoles, superAdminAccessRoles } from '../auth/auth.utils';
 import AuthGuard from '../auth/AuthGuard';
-import { allAccessRoles, managerAccessRoles, adminAccessRoles, superAdminAccessRoles } from '../auth/auth.utils';
-import Layout from '../components/layout';
-import MyLogsPage from '../pages/logs/MyLogsPage';
-import SystemLogsPage from '../pages/logs/SystemLogsPage';
-import DashboardPage from '../pages/dashboard'
-import LoginPage from '../pages/public/LoginPage';
-import NotFoundPage from '../pages/public/NotFoundPage';
-import UnauthorizedPage from '../pages/public/UnauthorizedPage';
-import UserPage from '../pages/users/Index';
-import AddUser from '../pages/users/addUser';
-import LogoutPage from '../pages/public/LogoutPage';
-import UpdateUser from '../pages/users/updateUser';
-import UserProfile from '../pages/users/UserProfile';
-import ChangePassword from '../pages/users/changePassword';
+
+const Calendar = lazy(() => import('../pages/Calendar'));
+const Chart = lazy(() => import('../pages/Chart'));
+const FormElements = lazy(() => import('../pages/Form/FormElements'));
+const FormLayout = lazy(() => import('../pages/Form/FormLayout'));
+const Profile = lazy(() => import('../pages/Profile'));
+const Settings = lazy(() => import('../pages/Settings'));
+const Tables = lazy(() => import('../pages/Tables'));
+const Alerts = lazy(() => import('../pages/UiElements/Alerts'));
+const Buttons = lazy(() => import('../pages/UiElements/Buttons'));
+const Layout = lazy(() => import('../layout/DefaultLayout'));
+
+
+const MyLogsPage = lazy(() => import('../pages/logs/MyLogsPage'));
+const SystemLogsPage = lazy(() => import('../pages/logs/SystemLogsPage'));
+const DashboardPage = lazy(() => import('../pages/Dashboard/ECommerce'));
+const LoginPage = lazy(() => import('../pages/Authentication/SignIn'));
+const NotFoundPage = lazy(() => import('../pages/public/NotFoundPage'));
+const UnauthorizedPage = lazy(() => import('../pages/public/UnauthorizedPage'));
+const UserPage = lazy(() => import('../pages/users/Index'));
+const AddUser = lazy(() => import('../pages/users/addUser'));
+const UpdateUser = lazy(() => import('../pages/users/updateUser'));
+const UserProfile = lazy(() => import('../pages/users/UserProfile'));
+const ChangePassword = lazy(() => import('../pages/users/changePassword'));
 
 const GlobalRouter = () => {
   return (
     <Routes>
-      {/* <Route path='' element /> */}
-        {/* Public routes */}
-        <Route path={PATH_PUBLIC.logout} element={<LogoutPage />} />
-        <Route path={PATH_PUBLIC.login} element={<LoginPage />} />
+      {/* Public routes */}
+      <Route path={PATH_PUBLIC.login} element={<LoginPage />} />
     
       <Route element={<Layout />}>
-        
-
-        {/* Protected routes -------------------LoginPage------------------------------- */}
+        {/* Protected routes */}
         <Route element={<AuthGuard roles={allAccessRoles} />}>
           <Route index element={<DashboardPage />} />
           <Route path={PATH_DASHBOARD.dashboard} element={<DashboardPage />} />
           <Route path={PATH_DASHBOARD.myLogs} element={<MyLogsPage />} />
-          <Route path={PATH_USER.profile} element={<UserProfile/>} />
-          <Route path={PATH_USER.changePassword} element={<ChangePassword/>} />
-                {/* Catch all (401) */}
-
-        <Route path={PATH_PUBLIC.unauthorized} element={<UnauthorizedPage />} />
+          <Route path={PATH_USER.profile} element={<UserProfile />} />
+          <Route path={PATH_USER.changePassword} element={<ChangePassword />} />
+          <Route path={PATH_UI.settings} element={<Settings />} />
+          <Route path={PATH_UI.profile} element={<Profile />} />
+          <Route path={PATH_UI.formLayout} element={<FormLayout />} />
+          <Route path={PATH_UI.formElements} element={<FormElements />} />
+          <Route path={PATH_UI.alerts} element={<Alerts />} />
+          <Route path={PATH_UI.calendar} element={<Calendar />} />
+          <Route path={PATH_UI.chart} element={<Chart />} />
+          <Route path={PATH_UI.tables} element={<Tables />} />
+          <Route path={PATH_UI.buttons} element={<Buttons />} />
+          {/* Catch all (401) */}
+          <Route path={PATH_PUBLIC.unauthorized} element={<UnauthorizedPage />} />
         </Route>
-        <Route element={<AuthGuard roles={managerAccessRoles} />}>
-
-        </Route>
+        
         <Route element={<AuthGuard roles={adminAccessRoles} />}>
           <Route path={PATH_USER.user} element={<UserPage />} />
           <Route path={PATH_USER.add} element={<AddUser />} />
@@ -50,9 +64,8 @@ const GlobalRouter = () => {
         <Route element={<AuthGuard roles={superAdminAccessRoles} />}>
 
         </Route>
-        {/* Protected routes -------------------------------------------------- */}
+        {/* Protected routes */}
          
-
         {/* Catch all (404) */}
         <Route path={PATH_PUBLIC.notFound} element={<NotFoundPage />} />
         <Route path='*' element={<Navigate to={PATH_PUBLIC.notFound} replace />} />

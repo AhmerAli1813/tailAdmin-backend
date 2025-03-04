@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import {  IAuthUserFilter, IAuthUserList} from '../../types/auth.types';
 import axiosInstance from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
-import Spinner from '../../components/general/Spinner';
+import Spinner from '../../common/Loader/index';
 import { USERS_LIST_URL } from '../../utils/globalConfig';
 const UserPage = () => {
   const [users, setUsers] = useState<IAuthUserList[]>([]);

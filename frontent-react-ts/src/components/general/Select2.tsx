@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import Select, { Props as SelectProps } from "react-select";
 import { Control, Controller } from "react-hook-form";
 
@@ -33,8 +33,8 @@ const Select2: React.FC<Select2Props> = ({
   ClassName,
   ...rest
 }) => {
-  const dynamicClassName = error ? `${ClassName} border-danger border-red-500` : `${ClassName} border-[#754eb477]`;
-
+  const dynamicClassName = error ? `${ClassName} p-6.5 border-danger border-red-500` : `${ClassName} border-[#754eb477]`;
+ 
   // const renderTopRow = () => {
   //   if (error) {
   //     return <span className='text-danger'>{error}</span>;
@@ -48,7 +48,7 @@ const Select2: React.FC<Select2Props> = ({
   return (
     <div className="">
       {/* {renderTopRow()} */}
-      <label className='  font-semibold '>{label} {Required && <span className='text-red-500'>*</span>}</label>
+      <label className='mb-3 block text-black dark:text-white '>{label} {Required && <span className='text-red-500'>*</span>}</label>
 
       <Controller
         name={inputName}
@@ -60,8 +60,8 @@ const Select2: React.FC<Select2Props> = ({
             options={options}
             isMulti={isMulti}
             placeholder={placeholder}
-            classNamePrefix={"react-select "}
-            className={"mt-2" + dynamicClassName}
+            classNamePrefix={"react-select"}
+            className={"p-4"+ dynamicClassName}
             onChange={(selectedOption) => {
               // Transform selected value
               const value = isMulti

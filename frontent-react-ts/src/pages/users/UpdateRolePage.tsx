@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Spinner from '../../components/general/Spinner';
+import Spinner from '../../common/Loader/index';
 import { IAuthUser, IUpdateRoleDto } from '../../types/auth.types';
 import axiosInstance from '../../utils/axiosInstance';
 import { UPDATE_ROLE_URL, USERS_LIST_URL } from '../../utils/globalConfig';

@@ -13,13 +13,13 @@ interface IProps {
 }
 
 const Button = ({ variant, type, label, onClick, loading, disabled,ClassName ,Children}: IProps) => {
-  const primaryClasses = ' btn btn-primary ';
+  const primaryClasses = ' bg-primary ';
 
-  const secondaryClasses = ' btn btn-secondary ';
+  const secondaryClasses = ' bg-secondary ';
 
-  const dangerClasses = ' btn btn-danger ';
+  const dangerClasses = ' bg-red ';
 
-  const lightClasses = ' btn btn-light ';
+  const lightClasses = ' bg-light ';
 
   const classNameCreator = (): string => {
     let finalClassName =' ';
@@ -32,7 +32,7 @@ const Button = ({ variant, type, label, onClick, loading, disabled,ClassName ,Ch
     } else if (variant === 'light') {
       finalClassName += lightClasses;
     }
-    finalClassName += ClassName+' disabled:shadow-none disabled:bg-gray-300 disabled:border-gray-300';
+    finalClassName += ClassName+' flex w-full justify-center rounded  p-3 font-medium text-gray disabled:shadow-none disabled:bg-gray-300 disabled:border-gray-300';
     return finalClassName;
   };
 

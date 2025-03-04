@@ -5,7 +5,7 @@ import { IAccountDto, IAuthUser, UserNameListDto } from "../../types/auth.types"
 import toast from "react-hot-toast";
 import { PATH_USER } from "../../routes/paths";
 import axiosInstance from "../../utils/axiosInstance";
-import Spinner from "../../components/general/Spinner";
+import Spinner from "../../common/Loader/index";
 import { Regional_RelationShip_user_list__URL, User_Update_URL, USERS_LIST_URL } from "../../utils/globalConfig";
 import Button from "../../components/general/Button";
 import { isAuthorizedForUpdateRole } from "../../auth/auth.utils";

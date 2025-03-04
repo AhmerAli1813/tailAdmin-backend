@@ -13,8 +13,7 @@ interface IProps {
   Disabled?: boolean
 }
 
-const InputField = ({ control, label, inputName, Value, Disabled, inputType = 'text', Placeholder, error, ClassName, Required, ...rest }: IProps) => {
-  ClassName = " w-full bg-white placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow";
+const InputField = ({ control, label, inputName, Value, Disabled, inputType = 'text', Placeholder, error, ClassName="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary", Required, ...rest }: IProps) => {
   // const renderTopRow = () => {
   //   if (error) {
   //     return <span className='text-danger'>{error}</span>;
@@ -25,12 +24,12 @@ const InputField = ({ control, label, inputName, Value, Disabled, inputType = 't
   //   return null;
   // };
 
-  const dynamicClassName = error ? ClassName + ' border-danger rounded-lg ' : ClassName + ' border-[#754eb477] ';
+  const dynamicClassName = error ? ClassName + ' border-red rounded-lg ' : ClassName + ' border-[#754eb477] ';
 
   return (
     <div className='w-full mb-3'>
       {/* {renderTopRow()} */}
-      <label className='  font-semibold '>{label} {Required && <span className='text-red-500'>*</span>}</label>
+      {label &&   <label className='mb-3 block text-black dark:text-white'>{label} {Required && <span className='text-red-500'>*</span>}</label>}
 
       <Controller
         name={inputName}

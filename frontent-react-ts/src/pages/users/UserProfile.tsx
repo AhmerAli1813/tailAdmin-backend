@@ -1,4 +1,4 @@
-import Breadcrumb from "../../components/general/Breadcrumb"
+import Breadcrumb from "../../components/Breadcrumb"
 import InputField from "../../components/general/InputField"
 import { baseURL } from "../../utils/globalConfig"
 

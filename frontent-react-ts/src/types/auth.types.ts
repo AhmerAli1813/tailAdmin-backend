@@ -7,14 +7,11 @@ export interface IAccountBasicDto {
   email: string;
   address?: string;
   designation?: string;
-  dC_Code: string;
  
 }
 
 export interface IAccountDto extends IAccountBasicDto {
-  regionHeadId?: string;
-  lineManagerId?: string;
-  regionId: number;
+ 
 
 }
 
@@ -77,9 +74,8 @@ export interface IAuthContext {
 export enum RolesEnum {
   SuperAdmin = "SuperAdmin",
   Admin = "Admin",
-  RegionalManager = "RegionalManager",
-  WealthManager = "WealthManager",
-  RelationshipManager = "RelationshipManager",
+  Investor = "Investor",
+  Salesman = "Salesman",
   AppUser = "AppUser",
 }
 

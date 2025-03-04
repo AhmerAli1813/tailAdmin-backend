@@ -18,18 +18,22 @@ export const getSession = () => {
 export const allAccessRoles = [
   RolesEnum.SuperAdmin,
   RolesEnum.Admin,
-  RolesEnum.RegionalManager,
-  RolesEnum.WealthManager,
-  RolesEnum.RelationshipManager,
+  RolesEnum.Investor,
+  RolesEnum.Salesman,
   RolesEnum.AppUser,
 ];
 
-export const managerAccessRoles = [
+export const InvestorAccessRoles = [
   RolesEnum.SuperAdmin,
   RolesEnum.Admin,
-  RolesEnum.RegionalManager,
-  RolesEnum.WealthManager,
-];
+  RolesEnum.Investor
+]
+
+export const SalesmanAccessRoles = [
+  RolesEnum.SuperAdmin,
+  RolesEnum.Admin,
+  RolesEnum.Salesman
+]
 
 export const adminAccessRoles = [
   RolesEnum.SuperAdmin,
@@ -40,39 +44,17 @@ export const superAdminAccessRoles = [
   RolesEnum.SuperAdmin,
 ];
 
-export const regionalManagerAccessRoles = [
-  RolesEnum.SuperAdmin,
-  RolesEnum.Admin,
-  RolesEnum.RegionalManager,
-];
 
-export const wealthManagerAccessRoles = [
-  RolesEnum.SuperAdmin,
-  RolesEnum.Admin,
-  RolesEnum.RegionalManager,
-  RolesEnum.WealthManager,
-];
 
-export const relationshipManagerAccessRoles = [
-  RolesEnum.SuperAdmin,
-  RolesEnum.Admin,
-  RolesEnum.RegionalManager,
-  RolesEnum.WealthManager,
-  RolesEnum.RelationshipManager,
-];
 
-export const appUserAccessRoles = [
-  RolesEnum.Admin, // AppUser data is controlled by Admin
-  RolesEnum.RegionalManager, // Admin assigns control to RegionalManager
-  RolesEnum.WealthManager, // Admin assigns control to WealthManager
-];
+
 
 
 // We need to specify which Roles can be updated by Logged-in user
 export const allowedRolesForUpdateArray = (loggedInUser?: IAuthUser): string[] => {
   return loggedInUser?.roles.includes(RolesEnum.SuperAdmin)
-    ? [RolesEnum.Admin, RolesEnum.AppUser, RolesEnum.RegionalManager,RolesEnum.RelationshipManager,RolesEnum.WealthManager]
-    : [RolesEnum.AppUser, RolesEnum.RegionalManager,RolesEnum.RelationshipManager,RolesEnum.WealthManager];
+    ? [RolesEnum.Admin, RolesEnum.AppUser, RolesEnum.Investor,RolesEnum.Salesman]
+    : [RolesEnum.AppUser, RolesEnum.Investor,RolesEnum.Salesman];
 };
 
 // we need to control that SuperAdmin cannot change SuperAdmin role
@@ -83,7 +65,7 @@ export const isAuthorizedForUpdateRole = (loggedInUserRole: string, selectedUser
     result = false;
   } else if (
     loggedInUserRole === RolesEnum.Admin &&
-    (selectedUserRole === RolesEnum.SuperAdmin || selectedUserRole === RolesEnum.Admin || selectedUserRole ===RolesEnum.RegionalManager)
+    (selectedUserRole === RolesEnum.SuperAdmin || selectedUserRole === RolesEnum.Admin)
   ) {
     result = false;
   }
